@@ -4,7 +4,7 @@ pipeline {
             // Define Docker Hub credentials ID
             DOCKERHUB_CREDENTIALS_ID = 'viettranni'
             // Define Docker Hub repository name
-            DOCKERHUB_REPO = 'viettranni/'
+            DOCKERHUB_REPO = 'viettranni/localizedgreetingapp'
             // Define Docker image tag
             DOCKER_IMAGE_TAG = 'latest_v1'
         }
