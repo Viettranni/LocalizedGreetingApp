@@ -5,7 +5,7 @@ pipeline {
         // Docker Hub repository name
         DOCKERHUB_REPO = 'viettranni/localizedgreetingapp'
         // Docker image tag
-        DOCKER_IMAGE_TAG = 'latest_v1'
+        DOCKER_IMAGE_TAG = 'latest_v3'
     }
     stages {
         stage('Checkout') {
