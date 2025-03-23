@@ -1,13 +1,12 @@
 pipeline {
     agent any
-     environment {
-            // Define Docker Hub credentials ID
-            DOCKERHUB_CREDENTIALS_ID = 'viettranni'
-            // Define Docker Hub repository name
-            DOCKERHUB_REPO = 'viettranni/localizedgreetingapp'
-            // Define Docker image tag
-            DOCKER_IMAGE_TAG = 'latest_v1'
-        }
+    environment {
+        DOCKERHUB_CREDENTIALS_ID = 'viettranni'
+        // Docker Hub repository name
+        DOCKERHUB_REPO = 'viettranni/localizedgreetingapp'
+        // Docker image tag
+        DOCKER_IMAGE_TAG = 'latest_v1'
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -39,24 +38,22 @@ pipeline {
                 jacoco()
             }
         }
-
-        stage('Build Docker Image') {
+        stage('Set up Docker Buildx') {
             steps {
-                // Ensure Docker is using the default context
                 script {
-                    sh 'docker context use default' // Switch to default context
-                    docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
+                    sh 'docker buildx create --use || true'
+                    sh 'docker buildx inspect --bootstrap'
                 }
             }
         }
-
-        stage('Push Docker Image to Docker Hub') {
+        stage('Build and Push Multi-Platform Docker Image') {
             steps {
-                // Push Docker image to Docker Hub
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
-                        docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
-                    }
+                    sh """
+                        docker login -u ${DOCKERHUB_CREDENTIALS_ID} -p \$(cat /run/secrets/dockerhub_password)
+                        docker buildx build --platform linux/amd64,linux/arm64 \
+                        -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} --push .
+                    """
                 }
             }
         }
