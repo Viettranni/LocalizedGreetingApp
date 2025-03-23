@@ -1,7 +1,6 @@
 pipeline {
     agent any
     environment {
-        DOCKERHUB_CREDENTIALS_ID = 'viettranni'
         // Docker Hub repository name
         DOCKERHUB_REPO = 'viettranni/localizedgreetingapp'
         // Docker image tag
@@ -49,11 +48,13 @@ pipeline {
         stage('Build and Push Multi-Platform Docker Image') {
             steps {
                 script {
-                    sh """
-                        docker login -u ${DOCKERHUB_CREDENTIALS_ID} -p \$(cat /run/secrets/dockerhub_password)
-                        docker buildx build --platform linux/amd64,linux/arm64 \
-                        -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} --push .
-                    """
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub_credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh """
+                            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                            docker buildx build --platform linux/amd64,linux/arm64 \
+                            -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} --push .
+                        """
+                    }
                 }
             }
         }
